@@ -12,7 +12,6 @@ class PagesService {
         await page.goto(link, {waitUntil: 'load'});
         const bodyHandle = await page.$('body');
         const {height} = await bodyHandle.boundingBox();
-        console.log(height);
         await bodyHandle.dispose();
         const viewportHeight = page.viewport().height;
         let viewportIncr = 0;
