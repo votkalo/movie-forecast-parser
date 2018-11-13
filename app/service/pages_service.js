@@ -4,9 +4,9 @@ function wait(ms) {
     return new Promise(resolve => setTimeout(() => resolve(), ms));
 }
 
-class LinksService {
+class PagesService {
 
-    async savePages(link) {
+    async savePage(link) {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         await page.goto(link, {waitUntil: 'load'});
@@ -27,4 +27,4 @@ class LinksService {
     }
 }
 
-module.exports = LinksService;
+module.exports = PagesService;

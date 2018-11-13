@@ -1,5 +1,5 @@
-const linksRoutes = require('./links_routes');
+const pagesRoutes = require('./pages_routes');
 
 module.exports = function(app) {
-    linksRoutes(app);
+    pagesRoutes(app);
 };

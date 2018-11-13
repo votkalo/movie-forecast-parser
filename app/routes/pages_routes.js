@@ -1,10 +1,10 @@
-const LinksService = require('../service/links_service');
+const PagesService = require('../service/pages_service');
 
 module.exports = function (app) {
 
     app.post('/links', async (req, res) => {
-        const linkService = new LinksService;
-        res.send(await linkService.savePages(req.body.link))
+        const pagesService = new PagesService;
+        res.send(await pagesService.savePage(req.body.link))
     });
 };
 
