@@ -1,10 +1,15 @@
 const PagesService = require('../service/pages_service');
 
 module.exports = function (app) {
+    const pagesService = new PagesService;
 
-    app.post('/links', async (req, res) => {
-        const pagesService = new PagesService;
-        res.send(await pagesService.savePage(req.body.link))
+    app.post('/pages', async (req, res) => {
+        const url = req.body.url;
+        if (req.body.infinite) {
+            res.send(await pagesService.getInfinitePage(url));
+            return
+        }
+        res.send(await pagesService.getPage(url));
     });
 };
 

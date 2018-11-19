@@ -6,7 +6,14 @@ function wait(ms) {
 
 class PagesService {
 
-    async savePage(link) {
+    async getPage(link) {
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto(link, {waitUntil: 'load'});
+        return await page.evaluate(() => document.body.innerHTML);
+    }
+
+    async getInfinitePage(link) {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         await page.goto(link, {waitUntil: 'load'});
