@@ -10,7 +10,8 @@ class PagesService {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         await page.goto(link, {waitUntil: 'load'});
-        return await page.evaluate(() => document.body.innerHTML);
+        const html = await page.evaluate(() => document.body.innerHTML);
+        return {html: html}
     }
 
     async getInfinitePage(link) {
@@ -29,7 +30,8 @@ class PagesService {
             await wait(500);
             viewportIncr = viewportIncr + viewportHeight;
         }
-        return await page.evaluate(() => document.body.innerHTML);
+        const html = await page.evaluate(() => document.body.innerHTML);
+        return {html: html}
     }
 }
 
