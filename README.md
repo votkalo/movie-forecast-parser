@@ -1,3 +1,3 @@
 # page-reader
 
-Read infinite scroll HTML page by url
+Read HTML page by url
