@@ -6,18 +6,18 @@ function wait(ms) {
 
 class PagesService {
 
-    async getPage(link) {
+    async getPage(url) {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(link, {waitUntil: 'load'});
+        await page.goto(url, {waitUntil: 'load'});
         const html = await page.evaluate(() => document.body.innerHTML);
         return {html: html}
     }
 
-    async getInfinitePage(link) {
+    async getInfinitePage(url) {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(link, {waitUntil: 'load'});
+        await page.goto(url, {waitUntil: 'load'});
         const bodyHandle = await page.$('body');
         const {height} = await bodyHandle.boundingBox();
         await bodyHandle.dispose();
