@@ -22,14 +22,14 @@ class PagesService {
         const {height} = await bodyHandle.boundingBox();
         await bodyHandle.dispose();
         const viewportHeight = page.viewport().height;
-        let viewportIncr = 0;
-        while (viewportIncr + viewportHeight < height) {
-            await page.evaluate(_viewportHeight => {
-                window.scrollBy(0, _viewportHeight);
-            }, viewportHeight);
+        let currentScrollHeight = 0;
+        do {
+            currentScrollHeight += viewportHeight;
+            await page.evaluate(currentScrollHeight => {
+                window.scrollBy(0, currentScrollHeight);
+            }, currentScrollHeight);
             await wait(500);
-            viewportIncr = viewportIncr + viewportHeight;
-        }
+        } while (currentScrollHeight < height);
         const html = await page.evaluate(() => document.body.innerHTML);
         return {html: html}
     }
