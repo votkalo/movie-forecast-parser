@@ -11,6 +11,7 @@ class PagesService {
         const page = await browser.newPage();
         await page.goto(url, {waitUntil: 'load'});
         const html = await page.evaluate(() => document.body.innerHTML);
+        await browser.close();
         return {html: html}
     }
 
@@ -31,6 +32,7 @@ class PagesService {
             await wait(500);
         } while (currentScrollHeight < height);
         const html = await page.evaluate(() => document.body.innerHTML);
+        await browser.close();
         return {html: html}
     }
 }
