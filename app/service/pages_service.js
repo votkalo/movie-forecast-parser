@@ -1,24 +1,24 @@
-const puppeteer = require('puppeteer');
-
 function wait(ms) {
     return new Promise(resolve => setTimeout(() => resolve(), ms));
 }
 
 class PagesService {
 
+    constructor(browser) {
+        this.browser = browser;
+    }
+
     async getPage(url) {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(url, {waitUntil: 'load'});
+        const page = await this.browser.newPage();
+        await page.goto(url);
         const html = await page.evaluate(() => document.body.innerHTML);
-        await browser.close();
+        await page.close();
         return {html: html}
     }
 
     async getInfinitePage(url) {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(url, {waitUntil: 'load'});
+        const page = await this.browser.newPage();
+        await page.goto(url);
         const bodyHandle = await page.$('body');
         const {height} = await bodyHandle.boundingBox();
         await bodyHandle.dispose();
@@ -32,7 +32,7 @@ class PagesService {
             await wait(500);
         } while (currentScrollHeight < height);
         const html = await page.evaluate(() => document.body.innerHTML);
-        await browser.close();
+        await page.close();
         return {html: html}
     }
 }

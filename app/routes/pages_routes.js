@@ -1,7 +1,7 @@
 const PagesService = require('../service/pages_service');
 
-module.exports = function (app) {
-    const pagesService = new PagesService;
+module.exports = function (app, browser) {
+    const pagesService = new PagesService(browser);
 
     app.post('/pages', async (req, res) => {
         const url = req.body.url;
