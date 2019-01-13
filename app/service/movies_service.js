@@ -93,7 +93,8 @@ class MoviesService {
         await page.goto(searchURL + searchQuery);
 
         const movies = [];
-        if (!searchIdentifier.test(page.$$(searchPageIdentifierSelector))) {
+
+        if (!searchIdentifier.test(await selectElement(page,searchPageIdentifierSelector))) {
             return movies;
         }
 
