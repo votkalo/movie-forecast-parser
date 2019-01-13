@@ -1,41 +1,59 @@
 const devices = require('puppeteer/DeviceDescriptors');
 const iPhone7 = devices['iPhone 7'];
+
 const searchURL = 'https://www.kinopoisk.ru/index.php?kp_query=';
 
-function createMoviePreview(title, originalTitle, year, posterURL, genres, countries, rating, sourceURL) {
+const searchPageIdentifierSelector = 'span.breadcrumbs__text';
+const movieSelector = 'a.movie-snippet';
+const titleSelector = 'div.movie-snippet__title';
+const originalTitleSelector = 'h3.movie-snippet__original-title';
+const yearSelector = 'span.movie-snippet__year';
+const genresSelector = 'div.movie-snippet__description';
+const countriesSelector = 'div.movie-snippet__countries';
+const ratingSelector = 'span.movie-snippet__rating-value';
+const sourceURLParameterSelector = 'href';
+
+const prefixImageURL = 'https://st.kp.yandex.net/images/';
+const prefixBigImageURL = `${prefixImageURL}film_big/`;
+const prefixSmallImageURL = `${prefixImageURL}film_iphone/iphone_`;
+const imageExtension = '.jpg';
+const postfixSmallImageURL = `?width=120`;
+
+const notRatingIdentifier = /%/;
+const searchIdentifier = /Поиск:/;
+
+function createMoviePreview(title, originalTitle, year, genres, countries, kinopoiskRating, kinopoiskMovieId, bigPosterURL, smallPosterURL, sourceURL) {
     return {
         title: title,
         originalTitle: originalTitle,
         year: year,
-        posterURL: posterURL,
         genres: genres,
         countries: countries,
-        rating: rating,
+        kinopoiskRating: kinopoiskRating,
+        kinopoiskMovieId: kinopoiskMovieId,
+        bigPosterURL: bigPosterURL,
+        smallPosterURL: smallPosterURL,
         sourceURL: sourceURL
     }
 }
 
-function parseMoviePreviewPosterURL(style) {
-    if (style) {
-        return style
-            .replace('background-image:url(', 'https:')
-            .replace(')', '')
-            .replace('120', '360');
+function createKinopoiskMovieBigPosterURL(kinopoiskMovieId) {
+    if (!kinopoiskMovieId) {
+        return null;
     }
-    return null;
+    return `${prefixBigImageURL}${kinopoiskMovieId}${imageExtension}`;
+}
+
+function createKinopoiskMovieSmallPosterURL(kinopoiskMovieId) {
+    if (!kinopoiskMovieId) {
+        return null;
+    }
+    return `${prefixSmallImageURL}${kinopoiskMovieId}${imageExtension}${postfixSmallImageURL}`;
 }
 
 async function selectElement(element, selector) {
     try {
         return await element.$eval(selector, node => node.innerText)
-    } catch (error) {
-        return null
-    }
-}
-
-async function selectElementStyle(element, selector) {
-    try {
-        return await element.$eval(selector, node => node.getAttribute('style'));
     } catch (error) {
         return null
     }
@@ -49,36 +67,59 @@ async function selectElementProperty(element, property) {
     }
 }
 
+function parseKinopoiskMovieId(sourceURL) {
+    if (!sourceURL) {
+        return null;
+    }
+    return sourceURL.slice(30, -1)
+}
+
+function getKinopoiskRatingValue(kinopoiskRating) {
+    if (notRatingIdentifier.test(kinopoiskRating)) {
+        return null
+    }
+    return kinopoiskRating
+}
+
 class MoviesService {
 
     constructor(browser) {
         this.browser = browser;
     }
 
-    async searchMovies(searchLine) {
+    async searchMovies(searchQuery) {
         const page = await this.browser.newPage();
         await page.emulate(iPhone7);
-        await page.goto(searchURL + searchLine);
+        await page.goto(searchURL + searchQuery);
 
-        const elements = await page.$$('a.movie-snippet');
         const movies = [];
+        if (!searchIdentifier.test(page.$$(searchPageIdentifierSelector))) {
+            return movies;
+        }
+
+        const elements = await page.$$(movieSelector);
 
         for (let index = 0; index < elements.length; index++) {
+            let kinopoiskRating = getKinopoiskRatingValue(await selectElement(elements[index], ratingSelector));
+            const sourceURL = await selectElementProperty(elements[index], sourceURLParameterSelector);
+            const kinopoiskMovieId = parseKinopoiskMovieId(sourceURL);
             movies.push(
                 createMoviePreview(
-                    await selectElement(elements[index], 'div.movie-snippet__title'),
-                    await selectElement(elements[index], 'h3.movie-snippet__original-title'),
-                    await selectElement(elements[index], 'span.movie-snippet__year'),
-                    parseMoviePreviewPosterURL(await selectElementStyle(elements[index], 'div.movie-snippet__image-wrap > div')),
-                    await selectElement(elements[index], 'div.movie-snippet__description'),
-                    await selectElement(elements[index], 'div.movie-snippet__countries'),
-                    await selectElement(elements[index], 'span.movie-snippet__rating-value'),
-                    await selectElementProperty(elements[index], 'href')
+                    await selectElement(elements[index], titleSelector),
+                    await selectElement(elements[index], originalTitleSelector),
+                    await selectElement(elements[index], yearSelector),
+                    await selectElement(elements[index], genresSelector),
+                    await selectElement(elements[index], countriesSelector),
+                    kinopoiskRating,
+                    kinopoiskMovieId,
+                    createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
+                    createKinopoiskMovieSmallPosterURL(kinopoiskMovieId),
+                    sourceURL
                 )
             );
         }
         await page.close();
-        return {movies: movies}
+        return movies;
     }
 
 }
