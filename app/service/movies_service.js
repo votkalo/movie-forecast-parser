@@ -37,6 +37,31 @@ function createMoviePreview(title, originalTitle, year, genres, countries, kinop
     }
 }
 
+async function parseMoviePreview(element) {
+    let kinopoiskRating = getKinopoiskRatingValue(await selectElement(element, ratingSelector));
+    const sourceURL = await selectElementProperty(element, sourceURLParameterSelector);
+    const kinopoiskMovieId = parseKinopoiskMovieId(sourceURL);
+    return createMoviePreview(
+        await selectElement(element, titleSelector),
+        notEmptyOrNull(await selectElement(element, originalTitleSelector)),
+        notEmptyOrNull(await selectElement(element, yearSelector)),
+        notEmptyOrNull(await selectElement(element, genresSelector)),
+        notEmptyOrNull(await selectElement(element, countriesSelector)),
+        notEmptyOrNull(kinopoiskRating),
+        kinopoiskMovieId,
+        createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
+        createKinopoiskMovieSmallPosterURL(kinopoiskMovieId),
+        sourceURL
+    )
+}
+
+function notEmptyOrNull(value) {
+    if (value === '') {
+        return null
+    }
+    return value
+}
+
 function createKinopoiskMovieBigPosterURL(kinopoiskMovieId) {
     if (!kinopoiskMovieId) {
         return null;
@@ -91,33 +116,13 @@ class MoviesService {
         const page = await this.browser.newPage();
         await page.emulate(iPhone7);
         await page.goto(searchURL + searchQuery);
-
         const movies = [];
-
-        if (!searchIdentifier.test(await selectElement(page,searchPageIdentifierSelector))) {
+        if (!searchIdentifier.test(await selectElement(page, searchPageIdentifierSelector))) {
             return movies;
         }
-
         const elements = await page.$$(movieSelector);
-
         for (let index = 0; index < elements.length; index++) {
-            let kinopoiskRating = getKinopoiskRatingValue(await selectElement(elements[index], ratingSelector));
-            const sourceURL = await selectElementProperty(elements[index], sourceURLParameterSelector);
-            const kinopoiskMovieId = parseKinopoiskMovieId(sourceURL);
-            movies.push(
-                createMoviePreview(
-                    await selectElement(elements[index], titleSelector),
-                    await selectElement(elements[index], originalTitleSelector),
-                    await selectElement(elements[index], yearSelector),
-                    await selectElement(elements[index], genresSelector),
-                    await selectElement(elements[index], countriesSelector),
-                    kinopoiskRating,
-                    kinopoiskMovieId,
-                    createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
-                    createKinopoiskMovieSmallPosterURL(kinopoiskMovieId),
-                    sourceURL
-                )
-            );
+            movies.push(await parseMoviePreview(elements[index]));
         }
         await page.close();
         return movies;
