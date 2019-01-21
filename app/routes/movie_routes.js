@@ -1,7 +1,7 @@
-const MoviesService = require('../service/movies_service');
+const MovieService = require('../service/movie_service');
 
 module.exports = function (app, browser) {
-    const moviesService = new MoviesService(browser);
+    const movieService = new MovieService(browser);
 
     app.post('/movies/search', async (req, res) => {
         const searchQuery = req.body.searchQuery;
@@ -10,7 +10,7 @@ module.exports = function (app, browser) {
             res.send('searchQuery can not be empty');
             return
         }
-        res.send(await moviesService.searchMovies(searchQuery));
+        res.send(await movieService.searchMovies(searchQuery));
     });
 };
 

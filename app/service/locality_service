@@ -1,0 +1,47 @@
+const ParseUtil = require('../util/ParseUtil');
+
+const devices = require('puppeteer/DeviceDescriptors');
+const iPhone7 = devices['iPhone 7'];
+
+const localitiesURL = 'https://afisha.tut.by/film/';
+
+const localitySelector = '#region > ul > li > a';
+const movieScheduleNameParameterSelector = 'innerText';
+const movieScheduleURLParameterSelector = 'href';
+
+function createLocality(name, movieScheduleURL) {
+    return {
+        name: name,
+        movieScheduleURL: movieScheduleURL
+    }
+}
+
+async function parseLocality(element) {
+    return createLocality(
+        await ParseUtil.selectElementProperty(element, movieScheduleNameParameterSelector),
+        await ParseUtil.selectElementProperty(element, movieScheduleURLParameterSelector)
+    )
+}
+
+class LocalityService {
+
+    constructor(browser) {
+        this.browser = browser;
+    }
+
+    async getLocalities() {
+        const page = await this.browser.newPage();
+        await page.emulate(iPhone7);
+        await page.goto(localitiesURL);
+        const localities = [];
+        const elements = await page.$$(localitySelector);
+        for (let index = 0; index < elements.length; index++) {
+            localities.push(await parseLocality(elements[index]));
+        }
+        await page.close();
+        return localities;
+    }
+
+}
+
+module.exports = LocalityService;

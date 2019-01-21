@@ -1,7 +1,7 @@
-const pagesRoutes = require('./pages_routes');
-const moviesRoutes = require('./movies_routes.js');
+const movieRoutes = require('./movie_routes');
+const localityRoutes = require('./locality_routes');
 
 module.exports = function(app, browser) {
-    pagesRoutes(app, browser);
-    moviesRoutes(app, browser);
+    movieRoutes(app, browser);
+    localityRoutes(app, browser);
 };

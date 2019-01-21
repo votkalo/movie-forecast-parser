@@ -1,3 +1,5 @@
+const ParseUtil = require('../util/ParseUtil');
+
 const devices = require('puppeteer/DeviceDescriptors');
 const iPhone7 = devices['iPhone 7'];
 
@@ -38,15 +40,15 @@ function createMoviePreview(title, originalTitle, year, genres, countries, kinop
 }
 
 async function parseMoviePreview(element) {
-    let kinopoiskRating = getKinopoiskRatingValue(await selectElement(element, ratingSelector));
-    const sourceURL = await selectElementProperty(element, sourceURLParameterSelector);
+    let kinopoiskRating = getKinopoiskRatingValue(await ParseUtil.selectElement(element, ratingSelector));
+    const sourceURL = await ParseUtil.selectElementProperty(element, sourceURLParameterSelector);
     const kinopoiskMovieId = parseKinopoiskMovieId(sourceURL);
     return createMoviePreview(
-        await selectElement(element, titleSelector),
-        notEmptyOrNull(await selectElement(element, originalTitleSelector)),
-        notEmptyOrNull(await selectElement(element, yearSelector)),
-        notEmptyOrNull(await selectElement(element, genresSelector)),
-        notEmptyOrNull(await selectElement(element, countriesSelector)),
+        await ParseUtil.selectElement(element, titleSelector),
+        notEmptyOrNull(await ParseUtil.selectElement(element, originalTitleSelector)),
+        notEmptyOrNull(await ParseUtil.selectElement(element, yearSelector)),
+        notEmptyOrNull(await ParseUtil.selectElement(element, genresSelector)),
+        notEmptyOrNull(await ParseUtil.selectElement(element, countriesSelector)),
         notEmptyOrNull(kinopoiskRating),
         kinopoiskMovieId,
         createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
@@ -76,22 +78,6 @@ function createKinopoiskMovieSmallPosterURL(kinopoiskMovieId) {
     return `${prefixSmallImageURL}${kinopoiskMovieId}${imageExtension}${postfixSmallImageURL}`;
 }
 
-async function selectElement(element, selector) {
-    try {
-        return await element.$eval(selector, node => node.innerText)
-    } catch (error) {
-        return null
-    }
-}
-
-async function selectElementProperty(element, property) {
-    try {
-        return await (await element.getProperty(property)).jsonValue()
-    } catch (error) {
-        return null
-    }
-}
-
 function parseKinopoiskMovieId(sourceURL) {
     if (!sourceURL) {
         return null;
@@ -106,7 +92,7 @@ function getKinopoiskRatingValue(kinopoiskRating) {
     return kinopoiskRating
 }
 
-class MoviesService {
+class MovieService {
 
     constructor(browser) {
         this.browser = browser;
@@ -117,7 +103,7 @@ class MoviesService {
         await page.emulate(iPhone7);
         await page.goto(searchURL + searchQuery);
         const movies = [];
-        if (!searchIdentifier.test(await selectElement(page, searchPageIdentifierSelector))) {
+        if (!searchIdentifier.test(await ParseUtil.selectElement(page, searchPageIdentifierSelector))) {
             return movies;
         }
         const elements = await page.$$(movieSelector);
@@ -130,4 +116,4 @@ class MoviesService {
 
 }
 
-module.exports = MoviesService;
+module.exports = MovieService;
