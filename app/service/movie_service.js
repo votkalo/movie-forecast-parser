@@ -1,28 +1,28 @@
-const ParseUtil = require('../util/ParseUtil');
+const ParseUtil                     = require('../util/ParseUtil');
 
-const devices = require('puppeteer/DeviceDescriptors');
-const iPhone7 = devices['iPhone 7'];
+const devices                       = require('puppeteer/DeviceDescriptors');
+const iPhone7                       = devices['iPhone 7'];
 
-const searchURL = 'https://www.kinopoisk.ru/index.php?kp_query=';
+const searchURL                     = 'https://www.kinopoisk.ru/index.php?kp_query=';
 
-const searchPageIdentifierSelector = 'span.breadcrumbs__text';
-const movieSelector = 'a.movie-snippet';
-const titleSelector = 'div.movie-snippet__title';
-const originalTitleSelector = 'h3.movie-snippet__original-title';
-const yearSelector = 'span.movie-snippet__year';
-const genresSelector = 'div.movie-snippet__description';
-const countriesSelector = 'div.movie-snippet__countries';
-const ratingSelector = 'span.movie-snippet__rating-value';
-const sourceURLParameterSelector = 'href';
+const searchPageIdentifierSelector  = 'span.breadcrumbs__text';
+const movieSelector                 = 'a.movie-snippet';
+const titleSelector                 = 'div.movie-snippet__title';
+const originalTitleSelector         = 'h3.movie-snippet__original-title';
+const yearSelector                  = 'span.movie-snippet__year';
+const genresSelector                = 'div.movie-snippet__description';
+const countriesSelector             = 'div.movie-snippet__countries';
+const ratingSelector                = 'span.movie-snippet__rating-value';
+const sourceURLParameterSelector    = 'href';
 
-const prefixImageURL = 'https://st.kp.yandex.net/images/';
-const prefixBigImageURL = `${prefixImageURL}film_big/`;
-const prefixSmallImageURL = `${prefixImageURL}film_iphone/iphone_`;
-const imageExtension = '.jpg';
-const postfixSmallImageURL = `?width=120`;
+const prefixImageURL                = 'https://st.kp.yandex.net/images/';
+const prefixBigImageURL             = `${prefixImageURL}film_big/`;
+const prefixSmallImageURL           = `${prefixImageURL}film_iphone/iphone_`;
+const imageExtension                = '.jpg';
+const postfixSmallImageURL          = `?width=120`;
 
-const notRatingIdentifier = /%/;
-const searchIdentifier = /Поиск:/;
+const notRatingIdentifier           = /%/;
+const searchIdentifier              = /Поиск:/;
 
 function createMoviePreview(title, originalTitle, year, genres, countries, kinopoiskRating, kinopoiskMovieId, bigPosterURL, smallPosterURL, sourceURL) {
     return {
