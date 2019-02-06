@@ -1,13 +1,13 @@
-const ParseUtil                            = require('../util/ParseUtil');
+const ParseUtil = require('../util/ParseUtil');
 
-const devices                              = require('puppeteer/DeviceDescriptors');
-const iPhone7                              = devices['iPhone 7'];
+const devices = require('puppeteer/DeviceDescriptors');
+const iPhone7 = devices['iPhone 7'];
 
-const localitiesURL                        = 'https://afisha.tut.by/film/';
+const localitiesURL = 'https://afisha.tut.by/film/';
 
-const localitySelector                     = '#region > ul > li > a';
-const movieScheduleNameParameterSelector   = 'innerText';
-const movieScheduleURLParameterSelector    = 'href';
+const localitySelector = '#region > ul > li > a';
+const movieScheduleNameParameterSelector = 'innerText';
+const movieScheduleURLParameterSelector = 'href';
 
 function createLocality(name, movieScheduleURL) {
     return {
