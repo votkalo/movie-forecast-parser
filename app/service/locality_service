@@ -9,18 +9,27 @@ const localitySelector = '#region > ul > li > a';
 const movieScheduleNameParameterSelector = 'innerText';
 const movieScheduleURLParameterSelector = 'href';
 
-function createLocality(name, movieScheduleURL) {
+const moviesScheduleURLPrefix = 'https://afisha.tut.by/film-';
+
+function createLocality(name, alternativeName, movieScheduleURL) {
     return {
         name: name,
-        movieScheduleURL: movieScheduleURL
+        alternativeName: alternativeName,
+        moviesScheduleURL: movieScheduleURL
     }
 }
 
 async function parseLocality(element) {
+    const moviesScheduleURL = await ParseUtil.selectElementProperty(element, movieScheduleURLParameterSelector);
     return createLocality(
         await ParseUtil.selectElementProperty(element, movieScheduleNameParameterSelector),
-        await ParseUtil.selectElementProperty(element, movieScheduleURLParameterSelector)
+        parseLocalityAlternativeName(moviesScheduleURL),
+        moviesScheduleURL
     )
+}
+
+function parseLocalityAlternativeName(moviesScheduleURL) {
+    return moviesScheduleURL.replace(moviesScheduleURLPrefix, '').replace('/', '')
 }
 
 class LocalityService {

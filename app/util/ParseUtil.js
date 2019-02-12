@@ -1,6 +1,14 @@
 class ParseUtil {
     static async selectElement(element, selector) {
         try {
+            return await element.$(selector)
+        } catch (error) {
+            return null
+        }
+    }
+
+    static async selectElementInnerText(element, selector) {
+        try {
             return await element.$eval(selector, node => node.innerText)
         } catch (error) {
             return null
