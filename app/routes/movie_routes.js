@@ -29,14 +29,5 @@ module.exports = function (app, browser) {
         res.send(movie);
     });
 
-    app.get('/movies/schedule/:alternativeLocalityName/today', async (req, res) => {
-        const alternativeLocalityName = req.params.alternativeLocalityName;
-        if (!alternativeLocalityName) {
-            res.status(400);
-            res.send('alternativeLocalityName can not be empty');
-            return
-        }
-        res.send(await movieService.getMoviesSchedule(alternativeLocalityName));
-    });
 };
 
