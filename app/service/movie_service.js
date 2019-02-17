@@ -92,7 +92,7 @@ function parseKinopoiskMovieId(sourceURL) {
     if (!sourceURL) {
         return null;
     }
-    return sourceURL.replace(/^\D+/g, '');
+    return sourceURL.replace(/\D+/g, '');
 }
 
 function parseKinopoiskMovieCountries(countryDurationLine) {
