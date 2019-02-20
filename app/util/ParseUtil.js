@@ -22,6 +22,13 @@ class ParseUtil {
             return null
         }
     }
+
+    static notEmptyOrNull(value) {
+        if (value === '') {
+            return null
+        }
+        return value
+    }
 }
 
 module.exports = ParseUtil;

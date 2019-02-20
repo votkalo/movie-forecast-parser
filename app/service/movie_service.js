@@ -55,23 +55,16 @@ async function parseMoviePreview(element) {
     const kinopoiskMovieId = parseKinopoiskMovieId(sourceURL);
     return createMovie(
         await ParseUtil.selectElementInnerText(element, searchTitleSelector),
-        notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchOriginalTitleSelector)),
-        notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchYearSelector)),
-        notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchGenresSelector)),
-        notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchCountriesSelector)),
-        notEmptyOrNull(kinopoiskRating),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchOriginalTitleSelector)),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchYearSelector)),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchGenresSelector)),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(element, searchCountriesSelector)),
+        ParseUtil.notEmptyOrNull(kinopoiskRating),
         kinopoiskMovieId,
         createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
         createKinopoiskMovieSmallPosterURL(kinopoiskMovieId),
         sourceURL
     )
-}
-
-function notEmptyOrNull(value) {
-    if (value === '') {
-        return null
-    }
-    return value
 }
 
 function createKinopoiskMovieBigPosterURL(kinopoiskMovieId) {
@@ -121,14 +114,12 @@ class MovieService {
         const page = await this.browser.newPage();
         await page.emulate(iPhone7);
         await page.goto(searchURL + searchQuery);
-        const movies = [];
         if (!searchIdentifier.test(await ParseUtil.selectElementInnerText(page, searchPageIdentifierSelector))) {
-            return movies;
+            return [];
         }
         const elements = await page.$$(searchMovieSelector);
-        for (let index = 0; index < elements.length; index++) {
-            movies.push(await parseMoviePreview(elements[index]));
-        }
+        const elementsPromises = elements.map(element => parseMoviePreview(element));
+        const movies = await Promise.all(elementsPromises);
         await page.close();
         return movies;
     }
@@ -143,11 +134,11 @@ class MovieService {
         }
         const movie = createMovie(
             await ParseUtil.selectElementInnerText(page, movieTitleSelector),
-            notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieOriginalTitleSelector)),
-            notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieYearSelector)),
-            notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieGenresSelector)),
-            notEmptyOrNull(parseKinopoiskMovieCountries(await ParseUtil.selectElementInnerText(page, movieCountriesSelector))),
-            notEmptyOrNull(getKinopoiskRatingValue(await ParseUtil.selectElementInnerText(page, movieRatingSelector))),
+            ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieOriginalTitleSelector)),
+            ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieYearSelector)),
+            ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(page, movieGenresSelector)),
+            ParseUtil.notEmptyOrNull(parseKinopoiskMovieCountries(await ParseUtil.selectElementInnerText(page, movieCountriesSelector))),
+            ParseUtil.notEmptyOrNull(getKinopoiskRatingValue(await ParseUtil.selectElementInnerText(page, movieRatingSelector))),
             kinopoiskMovieId,
             createKinopoiskMovieBigPosterURL(kinopoiskMovieId),
             createKinopoiskMovieSmallPosterURL(kinopoiskMovieId),

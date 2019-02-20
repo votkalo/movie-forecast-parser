@@ -4,10 +4,16 @@ const moviesScheduleURL = 'https://afisha.tut.by/film-';
 
 const movieSchedulePageIdentifierSelector = 'h1.title_page';
 const movieScheduleClickSelector = 'ul#sort-type > li:nth-child(2)';
+
 const movieScheduleMovieSelector = 'div#schedule-table > div.b-film-info';
 const movieScheduleMovieTitleSelector = 'div.name > a';
 const movieScheduleMovieTitleParameterSelector = 'innerText';
 const movieScheduleMovieURLParameterSelector = 'href';
+
+const movieSelector = 'table > tbody > tr > td.post.b-event-post';
+const movieOriginalTitleSelector = 'div.sub_title';
+const movieYearSelector = 'table.movie_info > tbody > tr > td.year';
+
 const movieScheduleCinemaSelector = 'li.b-film-list__li';
 const movieScheduleCinemaNameSelector = 'div.film-name > a';
 const movieScheduleCinemaNameParameterSelector = 'innerText';
@@ -18,9 +24,11 @@ const movieScheduleSession3DSelector = 'a > div.time-label > i.label-icon';
 
 const movieScheduleIdentifier = /Киноафиша /;
 
-function createMovieSchedule(movieTitle, movieScheduleURL, cinemas) {
+function createMovieSchedule(movieTitle, movieOriginalTitle, movieYear, movieScheduleURL, cinemas) {
     return {
         title: movieTitle,
+        originalTitle: movieOriginalTitle,
+        year: movieYear,
         scheduleURL: movieScheduleURL,
         cinemas: cinemas
     }
@@ -41,30 +49,32 @@ function createMovieScheduleSession(time, is3D) {
     }
 }
 
-async function parseMovieSchedule(element) {
-    const movieTitleElement = await ParseUtil.selectElement(element, movieScheduleMovieTitleSelector);
-    if (!movieTitleElement) {
+async function parseMovieSchedule(element, browser) {
+    const movieScheduleMovieTitle = await ParseUtil.selectElement(element, movieScheduleMovieTitleSelector);
+    if (!movieScheduleMovieTitle) {
         return null
     }
-    const cinemas = [];
-    const cinemasElements = await element.$$(movieScheduleCinemaSelector);
-    for (let index = 0; index < cinemasElements.length; index++) {
-        cinemas.push(await parseMovieScheduleCinema(cinemasElements[index]));
-    }
-    return createMovieSchedule(
-        await ParseUtil.selectElementProperty(movieTitleElement, movieScheduleMovieTitleParameterSelector),
-        await ParseUtil.selectElementProperty(movieTitleElement, movieScheduleMovieURLParameterSelector),
+    const cinemasElementsPromises = await element.$$(movieScheduleCinemaSelector);
+    const cinemas = await Promise.all(cinemasElementsPromises.map(element => parseMovieScheduleCinema(element)));
+    const movieScheduleMovieURL = await ParseUtil.selectElementProperty(movieScheduleMovieTitle, movieScheduleMovieURLParameterSelector);
+    const page = await browser.newPage();
+    await page.goto(movieScheduleMovieURL);
+    const movieElement = await ParseUtil.selectElement(page, movieSelector);
+    const movieSchedule = createMovieSchedule(
+        await ParseUtil.selectElementProperty(movieScheduleMovieTitle, movieScheduleMovieTitleParameterSelector),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(movieElement, movieOriginalTitleSelector)),
+        ParseUtil.notEmptyOrNull(await ParseUtil.selectElementInnerText(movieElement, movieYearSelector)),
+        movieScheduleMovieURL,
         cinemas
-    )
+    );
+    await page.close();
+    return movieSchedule
 }
 
 async function parseMovieScheduleCinema(element) {
     const cinemaNameElement = await ParseUtil.selectElement(element, movieScheduleCinemaNameSelector);
-    const sessions = [];
-    const sessionsElements = await element.$$(movieScheduleSessionSelector);
-    for (let index = 0; index < sessionsElements.length; index++) {
-        sessions.push(await parseMovieScheduleSession(sessionsElements[index]));
-    }
+    const sessionsElementsPromises = await element.$$(movieScheduleSessionSelector);
+    const sessions = await Promise.all(sessionsElementsPromises.map(element => parseMovieScheduleSession(element)));
     return createMovieScheduleCinema(
         await ParseUtil.selectElementProperty(cinemaNameElement, movieScheduleCinemaNameParameterSelector),
         await ParseUtil.selectElementProperty(cinemaNameElement, movieScheduleCinemaURLParameterSelector),
@@ -92,23 +102,18 @@ class MovieService {
     async getMoviesSchedule(alternativeLocalityName) {
         const page = await this.browser.newPage();
         await page.goto(moviesScheduleURL + alternativeLocalityName);
-        const moviesSchedule = [];
         if (!movieScheduleIdentifier.test(await ParseUtil.selectElementInnerText(page, movieSchedulePageIdentifierSelector))) {
-            return moviesSchedule;
+            return [];
         }
         await Promise.all([
             page.waitForNavigation(),
             page.click(movieScheduleClickSelector)
         ]);
         const elements = await page.$$(movieScheduleMovieSelector);
-        for (let index = 0; index < elements.length; index++) {
-            const movieSchedule = await parseMovieSchedule(elements[index]);
-            if (movieSchedule) {
-                moviesSchedule.push(movieSchedule);
-            }
-        }
+        const moviesSchedulePromises = elements.map(element => parseMovieSchedule(element, this.browser));
+        const moviesSchedule = await Promise.all(moviesSchedulePromises);
         await page.close();
-        return moviesSchedule;
+        return moviesSchedule.filter(moviesSchedule => moviesSchedule);
     }
 }
 

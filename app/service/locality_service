@@ -42,11 +42,9 @@ class LocalityService {
         const page = await this.browser.newPage();
         await page.emulate(iPhone7);
         await page.goto(localitiesURL);
-        const localities = [];
         const elements = await page.$$(localitySelector);
-        for (let index = 0; index < elements.length; index++) {
-            localities.push(await parseLocality(elements[index]));
-        }
+        const elementsPromises = elements.map(element => parseLocality(element));
+        const localities = await Promise.all(elementsPromises);
         await page.close();
         return localities;
     }
