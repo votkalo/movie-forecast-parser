@@ -5,7 +5,6 @@ const iPhone7 = devices['iPhone 7'];
 
 const searchURL = 'https://www.kinopoisk.ru/index.php?kp_query=';
 const movieURL = 'https://www.kinopoisk.ru/film/';
-const moviesScheduleURL = 'https://afisha.tut.by/film-';
 
 const searchPageIdentifierSelector = 'span.breadcrumbs__text';
 const searchMovieSelector = 'a.movie-snippet';

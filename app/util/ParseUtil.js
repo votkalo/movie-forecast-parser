@@ -15,6 +15,14 @@ class ParseUtil {
         }
     }
 
+    static async selectPropertyFromElement(element, selector, property) {
+        try {
+            return await element.$eval(selector, (node, atr) => node.getAttribute(atr), property)
+        } catch (error) {
+            return null
+        }
+    }
+
     static async selectElementProperty(element, property) {
         try {
             return await (await element.getProperty(property)).jsonValue()
