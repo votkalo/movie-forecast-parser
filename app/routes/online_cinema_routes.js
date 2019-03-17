@@ -5,7 +5,7 @@ module.exports = function (app, browser) {
 
     const iviService = new IviService(browser);
 
-    app.post('/online/cinemas/:cinemaName/search', async (req, res) => {
+    app.post('/online-cinemas/:cinemaName/search', async (req, res) => {
         const movieInfo = req.body;
         const error = validateMovieInfo(movieInfo);
         if (error) {
@@ -33,9 +33,6 @@ module.exports = function (app, browser) {
         }
         if (!movieInfo.title) {
             return 'movieInfo title can not be empty';
-        }
-        if (!movieInfo.year) {
-            return 'movieInfo year can not be empty';
         }
         return '';
     }

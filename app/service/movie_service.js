@@ -93,7 +93,7 @@ function parseKinopoiskMovieCountries(countryDurationLine) {
     }
     return countryDurationLine.split(', ')
         .filter(string => !durationIdentifier.test(string))
-        .join(", ");
+        .join(', ');
 }
 
 function getKinopoiskRatingValue(kinopoiskRating) {

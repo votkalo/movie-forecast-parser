@@ -1,4 +1,4 @@
-const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 const xhttp = new XMLHttpRequest();
 
 const ParseUtil = require('../util/ParseUtil');
@@ -18,11 +18,13 @@ const moviePriceInfoSelector = '#js-pay-price';
 const movieSubscriptionSelector = 'div.ivi-button-container > a[data-purchase-type="subscription"]';
 
 const movieFreeWatchIdentifier = /shield-free/;
+const moviePreOrderIdentifier = /shield-pre-order/;
 
-function fillMovieInfo(movieInfo, price = 0, currency = '', isAllowBySubscription = false) {
+function fillMovieInfo(movieInfo, isPreOrder = false, price = 0, currency = '', isAllowBySubscription = false) {
     movieInfo['price'] = price;
     movieInfo['currency'] = currency;
     movieInfo['isAllowBySubscription'] = isAllowBySubscription;
+    movieInfo['isPreOrder'] = isPreOrder;
     return movieInfo;
 }
 
@@ -42,7 +44,8 @@ async function findMovieIdentifier(movieInfo, elements) {
             const imageShieldSrc = await ParseUtil.selectPropertyFromElement(movieShield, movieShieldImageSelector, movieShieldImagePropertySelector);
             return {
                 iviMovieId: id,
-                isFree: movieFreeWatchIdentifier.test(imageShieldSrc)
+                isFree: movieFreeWatchIdentifier.test(imageShieldSrc),
+                isPreOrder: moviePreOrderIdentifier.test(imageShieldSrc)
             };
         }
     }
@@ -54,11 +57,13 @@ async function prepareMovieInfo(movieInfo, movieIdentifier, page) {
         return null
     } else if (movieIdentifier.isFree && movieIdentifier.iviMovieId) {
         return fillMovieInfo(movieInfo);
+    } else if (movieIdentifier.isPreOrder && movieIdentifier.iviMovieId) {
+        return fillMovieInfo(movieInfo, true);
     } else if (movieIdentifier.iviMovieId) {
         await page.goto(movieDescriptionURL.replace(movieIdReplacer, movieIdentifier.iviMovieId));
         const fullPriceInfo = await ParseUtil.selectElementInnerText(page, moviePriceInfoSelector);
         const isAllowBySubscription = !!(await ParseUtil.selectElementInnerText(page, movieSubscriptionSelector));
-        return fillMovieInfo(movieInfo, parsePrice(fullPriceInfo), parsePriceCurrency(fullPriceInfo), isAllowBySubscription);
+        return fillMovieInfo(movieInfo, false, parsePrice(fullPriceInfo), parsePriceCurrency(fullPriceInfo), isAllowBySubscription);
     }
     return null;
 }
