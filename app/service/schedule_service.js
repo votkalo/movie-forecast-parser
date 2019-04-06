@@ -1,6 +1,6 @@
 const ParseUtil = require('../util/ParseUtil');
 
-const moviesScheduleURL = 'https://afisha.tut.by/film-';
+const moviesScheduleURL = 'https://afisha.tut.by/day-';
 
 const movieSchedulePageIdentifierSelector = 'h1.title_page';
 const movieScheduleClickSelector = 'ul#sort-type > li:nth-child(2)';
@@ -93,6 +93,15 @@ function parseMovieScheduleSessionTime(timeString) {
     return timeString.replace('\n3D', '');
 }
 
+function createScheduleURL(alternativeLocalityName) {
+    const date = new Date();
+    return `${moviesScheduleURL}${alternativeLocalityName}/film/${date.getFullYear()}/${addZero(date.getMonth() + 1)}/${addZero(date.getDate())}`
+}
+
+function addZero(value) {
+    return ('0' + value).slice(-2)
+}
+
 class MovieService {
 
     constructor(browser) {
@@ -101,7 +110,7 @@ class MovieService {
 
     async getMoviesSchedule(alternativeLocalityName) {
         const page = await this.browser.newPage();
-        await page.goto(moviesScheduleURL + alternativeLocalityName);
+        await page.goto(createScheduleURL(alternativeLocalityName));
         if (!movieScheduleIdentifier.test(await ParseUtil.selectElementInnerText(page, movieSchedulePageIdentifierSelector))) {
             return [];
         }
