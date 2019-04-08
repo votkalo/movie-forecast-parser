@@ -93,8 +93,7 @@ function parseMovieScheduleSessionTime(timeString) {
     return timeString.replace('\n3D', '');
 }
 
-function createScheduleURL(alternativeLocalityName) {
-    const date = new Date();
+function createScheduleURL(alternativeLocalityName, date) {
     return `${moviesScheduleURL}${alternativeLocalityName}/film/${date.getFullYear()}/${addZero(date.getMonth() + 1)}/${addZero(date.getDate())}`
 }
 
@@ -110,7 +109,8 @@ class MovieService {
 
     async getMoviesSchedule(alternativeLocalityName) {
         const page = await this.browser.newPage();
-        await page.goto(createScheduleURL(alternativeLocalityName));
+        const date = new Date();
+        await page.goto(createScheduleURL(alternativeLocalityName, date));
         if (!movieScheduleIdentifier.test(await ParseUtil.selectElementInnerText(page, movieSchedulePageIdentifierSelector))) {
             return [];
         }
@@ -120,9 +120,11 @@ class MovieService {
         ]);
         const elements = await page.$$(movieScheduleMovieSelector);
         const moviesSchedulePromises = elements.map(element => parseMovieSchedule(element, this.browser));
-        const moviesSchedule = await Promise.all(moviesSchedulePromises);
+        let moviesSchedule = await Promise.all(moviesSchedulePromises);
         await page.close();
-        return moviesSchedule.filter(moviesSchedule => moviesSchedule);
+        moviesSchedule = moviesSchedule.filter(moviesSchedule => moviesSchedule);
+        moviesSchedule.forEach(moviesSchedule => moviesSchedule["date"] = date.getTime());
+        return moviesSchedule;
     }
 }
 
