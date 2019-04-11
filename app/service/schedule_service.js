@@ -97,6 +97,10 @@ function createScheduleURL(alternativeLocalityName, date) {
     return `${moviesScheduleURL}${alternativeLocalityName}/film/${date.getFullYear()}/${addZero(date.getMonth() + 1)}/${addZero(date.getDate())}`
 }
 
+function toLocalDateFormat(date) {
+    return `${date.getFullYear()}-${addZero(date.getMonth() + 1)}-${addZero(date.getDate())}`
+}
+
 function addZero(value) {
     return ('0' + value).slice(-2)
 }
@@ -123,7 +127,7 @@ class MovieService {
         let moviesSchedule = await Promise.all(moviesSchedulePromises);
         await page.close();
         moviesSchedule = moviesSchedule.filter(moviesSchedule => moviesSchedule);
-        moviesSchedule.forEach(moviesSchedule => moviesSchedule["date"] = date.getTime());
+        moviesSchedule.forEach(moviesSchedule => moviesSchedule["date"] = toLocalDateFormat(date));
         return moviesSchedule;
     }
 }

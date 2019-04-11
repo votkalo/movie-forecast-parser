@@ -1,7 +1,7 @@
 const IviService = require('../service/ivi_service');
 
 module.exports = function (app, browser) {
-    const IVI_CINEMA_NAME = 'ivi';
+    const IVI_CINEMA_NAME = 'IVI';
 
     const iviService = new IviService(browser);
 
